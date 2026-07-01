@@ -46,3 +46,5 @@ flowchart TD
 ## 限制
 
 Request Inspector 依赖应用遵循标准代理环境变量。部分运行时、SDK 或 HTTP 客户端可能需要额外的代理配置。
+
+如果要检查 HTTPS 流量，应用或系统信任库需要信任 mitmproxy 的证书颁发机构。具体配置方式请参考官方 [mitmproxy 证书文档](https://docs.mitmproxy.org/stable/concepts/certificates/)。

@@ -46,3 +46,5 @@ In practice, start `mitmproxy` before launching your application debug session. 
 ## Limitations
 
 Request Inspector depends on applications respecting standard proxy environment variables. Some runtimes, SDKs, or HTTP clients may need their own proxy configuration.
+
+To inspect HTTPS traffic, the application or system trust store must trust the mitmproxy certificate authority. See the official [mitmproxy certificate documentation](https://docs.mitmproxy.org/stable/concepts/certificates/) for setup details.

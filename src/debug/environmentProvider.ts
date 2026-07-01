@@ -1,3 +1,6 @@
+import path from "path";
+import os from "os";
+
 export interface DebugConfigurationWithEnvironment {
 	env?: Record<string, string | undefined>;
 	[key: string]: unknown;
@@ -42,6 +45,7 @@ export class DynamicProxyDebugEnvironmentProvider {
 				HTTP_PROXY: proxyUrl,
 				HTTPS_PROXY: proxyUrl,
 				ALL_PROXY: proxyUrl,
+				REQUESTS_CA_BUNDLE: path.join(os.homedir(), '.mitmproxy', 'mitmproxy-ca-cert.pem'),
 			},
 		};
 	}
