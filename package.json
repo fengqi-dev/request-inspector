@@ -5,6 +5,7 @@
   "description": "Inspect outgoing requests from your code through mitmproxy with minimal setup.",
   "version": "0.0.1",
   "icon": "media/icon.png",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -55,7 +56,7 @@
     "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
     "lint": "eslint src",
     "test": "vscode-test",
-    "package:vsix": "vsce package --no-dependencies --allow-missing-repository --skip-license --allow-package-all-secrets"
+    "package:vsix": "vsce package --no-dependencies --allow-missing-repository --allow-package-all-secrets"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
