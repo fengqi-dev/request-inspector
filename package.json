@@ -1,0 +1,78 @@
+{
+  "name": "request-inspector",
+  "publisher": "fengqi-dev",
+  "displayName": "Request Inspector",
+  "description": "Inspect outgoing requests from your code through mitmproxy with minimal setup.",
+  "version": "0.0.1",
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fengqi-dev/request-inspector"
+  },
+  "categories": [
+    "Debugging",
+    "Testing"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onDebug"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "mitmproxy.open",
+        "title": "Open mitmproxy"
+      },
+      {
+        "command": "mitmproxy.start",
+        "title": "Start mitmproxy"
+      },
+      {
+        "command": "mitmproxy.stop",
+        "title": "Stop mitmproxy"
+      },
+      {
+        "command": "mitmproxy.restart",
+        "title": "Restart mitmproxy"
+      },
+      {
+        "command": "mitmproxy.toggle",
+        "title": "Toggle mitmproxy"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test",
+    "package:vsix": "vsce package --no-dependencies --allow-missing-repository --skip-license --allow-package-all-secrets"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "@types/vscode": "^1.95.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.0.0",
+    "@vscode/vsce": "^3.9.2",
+    "eslint": "^10.5.0",
+    "ts-loader": "^9.6.2",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.1",
+    "webpack": "^5.107.2",
+    "webpack-cli": "^7.0.3"
+  },
+  "overrides": {
+    "diff": "^8.0.4",
+    "serialize-javascript": "^7.0.6"
+  }
+}

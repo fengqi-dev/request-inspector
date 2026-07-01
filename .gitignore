@@ -1,0 +1,8 @@
+out
+dist
+node_modules
+.vscode-test/
+*.vsix
+mimtproxy-release/dist/
+mimtproxy-release/artifacts/
+mimtproxy-release/.work/
