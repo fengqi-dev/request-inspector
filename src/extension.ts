@@ -2,13 +2,14 @@ import * as vscode from 'vscode';
 
 import { registerMitmproxyCommands } from './commands/register';
 import { DynamicProxyDebugEnvironmentProvider, buildAutomaticDebugInjectionEnabledMessage } from './debug/environmentProvider';
-import {
-	DEFAULT_MITMPROXY_VERSION,
-	DEFAULT_RUNTIME_RELEASE_OWNER,
-	DEFAULT_RUNTIME_RELEASE_REPO,
-	ensureManagedMitmproxyInstalled,
-} from './mitmproxy/installer';
+import { DEFAULT_MITMPROXY_COMMAND } from './mitmproxy/commandResolver';
 import { findAvailablePort } from './mitmproxy/port';
+import {
+	INSTALL_MITMPROXY_ACTION,
+	MITMPROXY_INSTALLATION_URL,
+	buildMissingMitmproxyMessage,
+	isMitmproxyCommandAvailable,
+} from './mitmproxy/systemCommand';
 import { MitmproxyTerminalManager, type MitmproxyStartOptions } from './mitmproxy/terminalManager';
 import { buildMitmproxyStatusBarPresentation } from './statusBar/presentation';
 
@@ -22,7 +23,6 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 	const debugEnvironmentProvider = new DynamicProxyDebugEnvironmentProvider();
 	const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-	let managedMitmproxyCommand = prepareManagedMitmproxy(DEFAULT_MITMPROXY_VERSION);
 	let activeProxyPort: number | undefined;
 
 	const updateStatusBar = () => {
@@ -42,64 +42,25 @@ export function activate(context: vscode.ExtensionContext) {
 	};
 
 	const getStartOptions = async (): Promise<MitmproxyStartOptions> => {
-		const command = await managedMitmproxyCommand;
-		if (!command) {
-			throw new Error('Managed mitmproxy is not installed.');
-		}
 		return {
-			command,
+			command: DEFAULT_MITMPROXY_COMMAND,
 			proxyPort: await findAvailablePort(),
 		};
 	};
 
-	async function prepareManagedMitmproxy(version: string): Promise<string | undefined> {
-		try {
-			return await Promise.resolve(vscode.window.withProgress({
-				location: vscode.ProgressLocation.Notification,
-				title: `Installing mitmproxy ${version} for Request Inspector`,
-			}, async (progress) => {
-				let lastDownloadPercent = 0;
-				return ensureManagedMitmproxyInstalled({
-					version,
-					releaseOwner: DEFAULT_RUNTIME_RELEASE_OWNER,
-					releaseRepo: DEFAULT_RUNTIME_RELEASE_REPO,
-					onDownloadProgress: ({ downloadedBytes, totalBytes }) => {
-						if (totalBytes !== undefined) {
-							const downloadPercent = Math.min(100, Math.floor((downloadedBytes / totalBytes) * 100));
-							const increment = downloadPercent - lastDownloadPercent;
-							if (increment > 0) {
-								lastDownloadPercent = downloadPercent;
-								progress.report({
-									increment,
-									message: `Downloading ${formatBytes(downloadedBytes)} / ${formatBytes(totalBytes)}`,
-								});
-							}
-							return;
-						}
+	const promptInstallMitmproxyIfMissing = async () => {
+		if (await isMitmproxyCommandAvailable(DEFAULT_MITMPROXY_COMMAND)) {
+			return;
+		}
 
-						progress.report({ message: `Downloading ${formatBytes(downloadedBytes)}` });
-					},
-					onInstalled: ({ executablePath }) => {
-						vscode.window.showInformationMessage(`mitmproxy ${version} installed successfully for Request Inspector: ${executablePath}`);
-					},
-				});
-			}));
-		} catch (error) {
-			vscode.window.showErrorMessage(`Failed to install managed mitmproxy: ${error instanceof Error ? error.message : String(error)}`);
-			return undefined;
+		const selected = await vscode.window.showWarningMessage(
+			buildMissingMitmproxyMessage(DEFAULT_MITMPROXY_COMMAND),
+			INSTALL_MITMPROXY_ACTION,
+		);
+		if (selected === INSTALL_MITMPROXY_ACTION) {
+			await vscode.env.openExternal(vscode.Uri.parse(MITMPROXY_INSTALLATION_URL));
 		}
-	}
-
-	function formatBytes(bytes: number): string {
-		if (bytes < 1024) {
-			return `${bytes} B`;
-		}
-		const kibibytes = bytes / 1024;
-		if (kibibytes < 1024) {
-			return `${kibibytes.toFixed(1)} KiB`;
-		}
-		return `${(kibibytes / 1024).toFixed(1)} MiB`;
-	}
+	};
 
 	const renderPanel = () => {
 		terminalManager?.reveal();
@@ -158,6 +119,7 @@ export function activate(context: vscode.ExtensionContext) {
 	};
 
 	updateStatusBar();
+	void promptInstallMitmproxyIfMissing();
 
 	context.subscriptions.push(
 		statusBarItem,
